@@ -242,11 +242,3 @@ btnSort.addEventListener("click", function (event) {
   displayMovements(currentAccount.movements, !isSorted);
   isSorted = !isSorted;
 });
-
-labelBalance.addEventListener("click", function () {
-  const movementsUI = Array.from(
-    document.querySelectorAll(".movements__value"),
-    elem => Number(elem.textContent.replace("$", ""))
-  );
-  console.log(movementsUI);
-});
