@@ -36,7 +36,14 @@ const account5 = {
   pin: 5500,
 };
 
-const accounts = [account1, account2, account3, account4, account5];
+const account6 = {
+  owner: "Tom Holland",
+  movements: [200, 500, 900, -100, 300, -1300, -250, 5000],
+  interestRate: 1.8,
+  pin: 6600,
+};
+
+const accounts = [account1, account2, account3, account4, account5, account6];
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -65,10 +72,14 @@ const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
 // Display the client's movements
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = "";
 
-  movements.forEach(function (movement, index) {
+  const movs = sort
+    ? movements.slice().sort((currentMov, nextMov) => currentMov - nextMov)
+    : movements;
+
+  movs.forEach(function (movement, index) {
     const movementType = movement > 0 ? "deposit" : "withdrawal";
     const movementRow = `
       <div class="movements__row">
@@ -110,7 +121,7 @@ const calculateDisplaySummary = function (account) {
 
   labelSumIn.textContent = `${totalIncome}$`;
   labelSumOut.textContent = `${Math.abs(totalOutcome)}$`;
-  labelSumInterest.textContent = `${interest}$`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}$`;
 };
 
 // Create names abbreviations -> usernames
@@ -118,10 +129,10 @@ const createUserNames = function (accounts) {
   accounts.forEach(
     account =>
       (account.username = account.owner
-        .toLowerCase()
-        .split(" ")
-        .map(subWord => subWord.at(0))
-        .join(""))
+        .toLowerCase() // muhammed abubakr
+        .split(" ") // ["muhammed", "abubakr"]
+        .map(subWord => subWord.at(0)) // ["m", "a"]
+        .join("")) // ma
   );
 };
 
@@ -209,4 +220,12 @@ btnClose.addEventListener("click", function (event) {
     labelWelcome.textContent = "Log in to get started";
   }
   inputCloseUsername.value = inputClosePin.value = "";
+});
+
+let sorted = false;
+
+btnSort.addEventListener("click", function (event) {
+  event.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
