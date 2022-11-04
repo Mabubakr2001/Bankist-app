@@ -43,7 +43,22 @@ const account6 = {
   pin: 6600,
 };
 
-const accounts = [account1, account2, account3, account4, account5, account6];
+const account7 = {
+  owner: "Chris Hemsworth",
+  movements: [100, 500, -200, -100, 1500, -250, 5000, 200],
+  interestRate: 1.4,
+  pin: 7700,
+};
+
+const accounts = [
+  account1,
+  account2,
+  account3,
+  account4,
+  account5,
+  account6,
+  account7,
+];
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -226,4 +241,12 @@ btnSort.addEventListener("click", function (event) {
   event.preventDefault();
   displayMovements(currentAccount.movements, !isSorted);
   isSorted = !isSorted;
+});
+
+labelBalance.addEventListener("click", function () {
+  const movementsUI = Array.from(
+    document.querySelectorAll(".movements__value"),
+    elem => Number(elem.textContent.replace("$", ""))
+  );
+  console.log(movementsUI);
 });
