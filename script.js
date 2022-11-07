@@ -1,6 +1,5 @@
 "use strict";
 
-// Data
 const account1 = {
   owner: "Muhammed Abubakr",
   movements: [
@@ -67,7 +66,6 @@ const account3 = {
 
 const accounts = [account1, account2, account3];
 
-// Elements
 const labelWelcome = document.querySelector(".welcome");
 const labelDate = document.querySelector(".date");
 const labelBalance = document.querySelector(".balance__value");
