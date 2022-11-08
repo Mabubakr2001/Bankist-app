@@ -91,20 +91,20 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-const formatMovDate = function (movDate, locale) {
+const formatMovementDate = function (movementDate, locale) {
   const calcPassedDays = (date_1, date_2) =>
     Math.round(Math.abs(date_2 - date_1) / (1000 * 60 * 60 * 24));
 
-  const allPassedDays = calcPassedDays(new Date(), movDate);
+  const passedDays = calcPassedDays(movementDate, new Date());
 
-  if (allPassedDays === 0) return "Today";
-  if (allPassedDays === 1) return "Yesterday";
-  if (allPassedDays <= 7) return `${allPassedDays} days ago`;
+  if (passedDays === 0) return "Today";
+  if (passedDays === 1) return "Yesterday";
+  if (passedDays <= 7) return `${passedDays} days ago`;
 
-  return Intl.DateTimeFormat(locale).format(movDate);
+  return new Intl.DateTimeFormat(locale).format(movementDate);
 };
 
-const formatCurrency = function (locale, currency, amount) {
+const formatAmount = function (currency, locale, amount) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency,
@@ -114,70 +114,80 @@ const formatCurrency = function (locale, currency, amount) {
 const displayMovements = function (account, sorted = false) {
   containerMovements.innerHTML = "";
 
-  const allMovs = sorted
-    ? account.movements.slice().sort((currMov, nextMov) => currMov - nextMov)
+  const movements = sorted
+    ? account.movements
+        .slice()
+        .sort((currentMovement, nextMovement) => currentMovement - nextMovement)
     : account.movements;
 
-  allMovs.forEach(function (mov, index) {
-    const movType = mov > 0 ? "deposit" : "withdrawal";
-    const movDate = new Date(account.movementsDates[index]);
-    const formattedDate = formatMovDate(movDate, account.locale);
-    const formattedMov = formatCurrency(account.locale, account.currency, mov);
-    const movRow = `
+  movements.forEach(function (movement, index) {
+    const movementType = movement > 0 ? "deposit" : "withdrawal";
+    const movementDate = new Date(account.movementsDates[index]);
+    const formattedMovementAmount = formatAmount(
+      account.currency,
+      account.locale,
+      movement
+    );
+    const formattedMovementDate = formatMovementDate(
+      movementDate,
+      account.locale
+    );
+    const movementRow = `
       <div class="movements__row">
-        <div class="movements__type movements__type--${movType}">${
+        <div class="movements__type movements__type--${movementType}">${
       index + 1
-    } ${movType}</div>
-        <div class="movements__date">${formattedDate}</div>
-        <div class="movements__value">${formattedMov}</div>
+    } ${movementType}</div>
+        <div class="movements__date">${formattedMovementDate}</div>
+        <div class="movements__value">${formattedMovementAmount}</div>
       </div>
     `;
-    containerMovements.insertAdjacentHTML("afterbegin", movRow);
+    containerMovements.insertAdjacentHTML("afterbegin", movementRow);
   });
 };
 
-const calcDisplayBalance = function (account) {
+function calcDisplayBalance(account) {
   account.balance = account.movements.reduce(
-    (movsSum, mov) => movsSum + mov,
+    (balance, movement) => balance + movement,
     0
   );
-
-  labelBalance.textContent = formatCurrency(
-    account.locale,
+  labelBalance.textContent = formatAmount(
     account.currency,
+    account.locale,
     account.balance
   );
-};
+}
 
 function calcDisplaySummary(account) {
-  const entireIncome = account.movements
-    .filter(mov => mov > 0)
-    .reduce((depositsSum, deposit) => depositsSum + deposit, 0);
+  const totalIncome = account.movements
+    .filter(movement => movement > 0)
+    .reduce((income, deposit) => income + deposit, 0);
 
-  const entireOutcome = account.movements
-    .filter(mov => mov < 0)
-    .reduce((withdrawalsSum, withdrawal) => withdrawalsSum + withdrawal, 0);
+  const totalOutcome = account.movements
+    .filter(movement => movement < 0)
+    .reduce((outcome, withdrawal) => outcome + withdrawal, 0);
 
-  const entireInterest = account.movements
-    .filter(mov => mov > 0)
+  const totalInterest = account.movements
+    .filter(movement => movement > 0)
     .map(deposit => (deposit * account.interestRate) / 100)
     .filter(interest => interest >= 1)
-    .reduce((interestsSum, interest) => interestsSum + interest, 0);
+    .reduce((benefit, interest) => benefit + interest, 0);
 
-  labelSumIn.textContent = formatCurrency(
-    account.locale,
+  labelSumIn.textContent = formatAmount(
     account.currency,
-    entireIncome
+    account.locale,
+    totalIncome
   );
-  labelSumOut.textContent = formatCurrency(
-    account.locale,
+
+  labelSumOut.textContent = formatAmount(
     account.currency,
-    Math.abs(entireOutcome)
+    account.locale,
+    Math.abs(totalOutcome)
   );
-  labelSumInterest.textContent = formatCurrency(
-    account.locale,
+
+  labelSumInterest.textContent = formatAmount(
     account.currency,
-    entireInterest
+    account.locale,
+    totalInterest
   );
 }
 
@@ -187,61 +197,64 @@ function updateUI(account) {
   calcDisplaySummary(account);
 }
 
-const createUserNames = accounts =>
+const createUsernames = accounts =>
   accounts.forEach(
     account =>
-      (account.userName = account.owner
+      (account.username = account.owner
         .toLowerCase()
         .split(" ")
         .map(word => word.at(0))
         .join(""))
   );
 
-createUserNames(accounts);
+createUsernames(accounts);
 
-function startLogOutTimer() {
+const startLogOutTimer = function () {
   let time = 300;
 
-  const tick = () => {
+  const remainingTime = setInterval(() => {
+    time--;
+
     const minutes = String(Math.trunc(time / 60)).padStart(2, 0);
     const seconds = String(time % 60).padStart(2, 0);
 
     labelTimer.textContent = `${minutes}:${seconds}`;
 
     if (time === 0) {
-      clearInterval(reminingTime);
+      clearInterval(remainingTime);
       containerApp.style.opacity = 0;
       labelWelcome.textContent = "Log in to get started";
     }
+  }, 1000);
 
-    time--;
-  };
+  return remainingTime;
+};
 
-  tick();
-  const reminingTime = setInterval(tick, 1000);
+let currentAccount, remainingTime;
 
-  return reminingTime;
+function setTimer() {
+  labelTimer.textContent = "05:00";
+  if (remainingTime) clearInterval(remainingTime);
+  remainingTime = startLogOutTimer();
 }
-
-let currentAccount, reminingTime;
 
 btnLogin.addEventListener("click", function (event) {
   event.preventDefault();
 
   currentAccount = accounts.find(
-    account => account.userName === inputLoginUsername.value
+    account => account.username === inputLoginUsername.value
   );
 
   if (currentAccount?.pin === +inputLoginPin.value) {
+    containerApp.style.opacity = "100%";
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
-    containerApp.style.opacity = "100%";
     labelWelcome.textContent = `Welcome, ${currentAccount.owner
       .split(" ")
       .at(0)}`;
 
-    const currDate = new Date();
-    const dateOptions = {
+    const currentDate = new Date();
+    const showDateOptions = {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -252,13 +265,11 @@ btnLogin.addEventListener("click", function (event) {
 
     labelDate.textContent = new Intl.DateTimeFormat(
       currentAccount.locale,
-      dateOptions
-    ).format(currDate);
+      showDateOptions
+    ).format(currentDate);
 
     updateUI(currentAccount);
-
-    if (reminingTime) clearInterval(reminingTime);
-    reminingTime = startLogOutTimer();
+    setTimer();
   }
 });
 
@@ -266,14 +277,14 @@ btnTransfer.addEventListener("click", function (event) {
   event.preventDefault();
 
   const intendedAccount = accounts.find(
-    account => account.userName === inputTransferTo.value
+    account => account.username === inputTransferTo.value
   );
 
-  const sendedAmount = +inputTransferAmount.value;
+  const sendedAmount = Math.floor(inputTransferAmount.value);
 
   if (
     intendedAccount &&
-    intendedAccount.userName !== currentAccount.userName &&
+    intendedAccount.username !== currentAccount.username &&
     sendedAmount > 0 &&
     sendedAmount <= currentAccount.balance
   ) {
@@ -284,8 +295,7 @@ btnTransfer.addEventListener("click", function (event) {
     intendedAccount.movements.push(sendedAmount);
     intendedAccount.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
-    clearInterval(reminingTime);
-    reminingTime = startLogOutTimer();
+    setTimer();
   }
 });
 
@@ -293,8 +303,9 @@ btnLoan.addEventListener("click", function (event) {
   event.preventDefault();
 
   const loanAmount = Math.floor(inputLoanAmount.value);
+
   const hasTenPercentFromTheLoan = currentAccount.movements.some(
-    mov => mov >= loanAmount * 0.1
+    movement => movement >= loanAmount * 0.1
   );
 
   if (loanAmount > 0 && hasTenPercentFromTheLoan) {
@@ -302,8 +313,7 @@ btnLoan.addEventListener("click", function (event) {
       currentAccount.movements.push(loanAmount);
       currentAccount.movementsDates.push(new Date().toISOString());
       updateUI(currentAccount);
-      clearInterval(reminingTime);
-      reminingTime = startLogOutTimer();
+      setTimer();
     }, 3000);
     inputLoanAmount.value = "";
     inputLoanAmount.blur();
@@ -314,25 +324,25 @@ btnClose.addEventListener("click", function (event) {
   event.preventDefault();
 
   if (
-    currentAccount.userName === inputCloseUsername.value &&
+    currentAccount.username === inputCloseUsername.value &&
     currentAccount.pin === +inputClosePin.value
   ) {
-    const index = accounts.findIndex(
-      account => account.userName === currentAccount.userName
+    const accountIndex = accounts.findIndex(
+      account => account.username === currentAccount.username
     );
 
-    accounts.splice(index, 1);
+    accounts.splice(accountIndex, 1);
 
-    labelWelcome.textContent = "Log in to get started";
     containerApp.style.opacity = 0;
     inputCloseUsername.value = inputClosePin.value = "";
+    labelWelcome.textContent = "Log in to get started";
   }
 });
 
 let isSorted = false;
 
 btnSort.addEventListener("click", function (event) {
-  event.preventDefault;
+  event.preventDefault();
   displayMovements(currentAccount, !isSorted);
   isSorted = !isSorted;
 });
