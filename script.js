@@ -13,13 +13,13 @@ const account1 = {
     "2020-01-28T09:15:04.904Z",
     "2020-04-01T10:17:24.185Z",
     "2020-05-08T14:11:59.604Z",
-    "2020-05-27T17:01:17.194Z",
-    "2020-07-11T23:36:17.929Z",
-    "2020-07-12T10:51:36.790Z",
-    "2020-08-14T12:59:26.795Z",
-    "2021-01-26T01:51:36.391Z",
-    "2021-01-29T10:55:22.701Z",
-    "2021-02-01T10:53:36.780Z",
+    "2021-05-27T17:01:17.194Z",
+    "2021-07-11T23:36:17.929Z",
+    "2021-07-12T10:51:36.790Z",
+    "2022-10-22T12:59:26.795Z",
+    "2022-11-02T01:51:36.391Z",
+    "2022-11-06T10:55:22.701Z",
+    "2022-11-08T10:53:36.780Z",
   ],
   currency: "USD",
   locale: "en-US",
@@ -97,11 +97,13 @@ const formatMovementDate = function (movementDate, locale) {
 
   const passedDays = calcPassedDays(movementDate, new Date());
 
-  if (passedDays === 0) return "Today";
-  if (passedDays === 1) return "Yesterday";
-  if (passedDays <= 7) return `${passedDays} days ago`;
-
-  return new Intl.DateTimeFormat(locale).format(movementDate);
+  return passedDays === 0
+    ? "Today"
+    : passedDays === 1
+    ? "Yesterday"
+    : passedDays <= 7
+    ? `${passedDays} days ago`
+    : new Intl.DateTimeFormat(locale).format(movementDate);
 };
 
 const formatAmount = function (currency, locale, amount) {
