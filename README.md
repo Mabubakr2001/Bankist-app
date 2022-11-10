@@ -1,4 +1,4 @@
-# This project is from Jonas Schmedtmann JavaScript course on Udemy
+# This project is from Jonas Schmedtmann's JavaScript course on Udemy
 
 ## First account:
 
